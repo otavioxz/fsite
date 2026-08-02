@@ -31,8 +31,6 @@
     uniform float uTime;
     uniform vec2 uResolution;
 
-    // distância de um ponto até uma linha diagonal (rotacionada em torno de "origin"),
-    // com perfil gaussiano suave, modulada por um brilho pseudoaleatório e recorrente no tempo
     float beam(vec2 uv, vec2 origin, float angle, float width, float seed) {
       vec2 p = uv - origin;
       float c = cos(angle);
@@ -42,7 +40,7 @@
       float line = exp(-d * d * 2.2);
       float flicker = 0.5 + 0.5 * sin(uTime * (0.22 + seed * 0.14) + seed * 12.9898);
       flicker = pow(flicker, 2.0);
-      flicker = mix(0.25, 1.0, flicker); // nunca some de vez, só varia entre fraco e forte
+      flicker = mix(0.25, 1.0, flicker);
       return line * flicker;
     }
 
