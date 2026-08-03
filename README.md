@@ -1,6 +1,6 @@
 # Portfólio
 
-Site estático (HTML/CSS/JS puro) inspirado no layout de guihzzy.pw:
+Site estático:
 hero animado, card de perfil com status do Discord em tempo real,
 barra de estatísticas, seção de projetos, seção sobre e um player de
 música flutuante estilo Spotify.
