@@ -314,6 +314,33 @@ img.mini-badge { padding: 4px; object-fit: contain; }
 .spotify-now-icon { width: 16px; height: 16px; color: #1ed760; flex-shrink: 0; display: flex; }
 .spotify-now-icon svg { width: 100%; height: 100%; }
 
+/* atividade (editor de código / jogo), no mesmo formato do bloco do Spotify */
+.activity-block + .activity-block { margin-top: .75rem; padding-top: .75rem; border-top: 1px dashed var(--border-soft); }
+.activity-label {
+  display: flex; align-items: center; gap: .375rem; margin-bottom: .5rem;
+  font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.activity-block.is-code .activity-label { color: #3ea6ff; }
+.activity-label-icon { width: 11px; height: 11px; display: flex; }
+.activity-label-icon svg { width: 100%; height: 100%; }
+.activity-elapsed {
+  margin-left: auto; font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: .02em;
+  color: var(--text-muted); font-variant-numeric: tabular-nums; text-transform: none;
+}
+.activity-cover { position: relative; flex-shrink: 0; }
+.activity-cover-fallback {
+  width: 2.25rem; height: 2.25rem; border-radius: .5rem; display: flex; align-items: center; justify-content: center;
+  background: var(--chip-bg-strong); border: 1px solid var(--border); color: var(--text-secondary);
+}
+.activity-block.is-code .activity-cover-fallback { color: #3ea6ff; }
+.activity-cover-fallback svg { width: 16px; height: 16px; }
+.activity-cover-badge {
+  position: absolute; right: -4px; bottom: -4px; width: 15px; height: 15px; border-radius: 999px;
+  background: var(--surface); border: 2px solid var(--surface); object-fit: cover;
+}
+.status-pop-card .activity-cover-fallback { width: 1.875rem; height: 1.875rem; border-radius: .375rem; }
+
 /* ===== Stats bar ===== */
 .stats-wrap { display: flex; justify-content: center; width: 100%; margin-top: 3.5rem; }
 @media (min-width: 768px) { .stats-wrap { margin-top: 5rem; } }

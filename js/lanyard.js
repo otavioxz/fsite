@@ -75,32 +75,103 @@
 
   const SPOTIFY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.42.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.18-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"></path></svg>';
 
+  const VSCODE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.15 2.587 18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"></path></svg>';
+  const GAME_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="11" y2="11"></line><line x1="8" x2="8" y1="9" y2="13"></line><line x1="15" x2="15.01" y1="12" y2="12"></line><line x1="18" x2="18.01" y1="10" y2="10"></line><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"></path></svg>';
+
+  // editores de código reconhecidos como "Studying" (o resto vira "Jogando")
+  const CODE_APPS = /visual studio code|^code$|vscode|cursor|vscodium|intellij|pycharm|webstorm|sublime|neovim|zed/i;
+
+  const esc = (str) =>
+    String(str == null ? "" : str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // Converte o asset de uma atividade (large_image/small_image) em URL.
+  // "mp:external/..." é imagem externa servida pelo proxy de mídia do Discord;
+  // o resto é asset da aplicação no CDN.
+  function assetUrl(act, key) {
+    const img = act.assets && act.assets[key];
+    if (!img) return "";
+    if (img.startsWith("mp:external/")) return `https://media.discordapp.net/external/${img.slice(12)}`;
+    if (img.startsWith("mp:")) return `https://media.discordapp.net/${img.slice(3)}`;
+    if (act.application_id) return `https://cdn.discordapp.com/app-assets/${act.application_id}/${img}.png`;
+    return "";
+  }
+
+  function fmtElapsed(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+    return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+
+  function activityBlock(act) {
+    const isCode = CODE_APPS.test(act.name);
+    const large = assetUrl(act, "large_image");
+    const small = assetUrl(act, "small_image");
+    const start = act.timestamps && act.timestamps.start;
+    const label = isCode ? "Studying" : "Jogando";
+    // no VS Code o nome do app vira subtítulo; o título é o que está sendo feito
+    const title = act.details || act.name;
+    const lines = [act.state, act.details ? act.name : ""].filter(Boolean);
+    return `
+      <div class="activity-block ${isCode ? "is-code" : "is-game"}">
+        <div class="activity-label">
+          <span class="activity-label-icon">${isCode ? VSCODE_ICON : GAME_ICON}</span>
+          <span>${label}</span>
+          ${start ? `<span class="activity-elapsed" data-elapsed-start="${start}">${fmtElapsed(Date.now() - start)}</span>` : ""}
+        </div>
+        <div class="spotify-now-row">
+          <div class="activity-cover">
+            ${large
+              ? `<img class="spotify-now-cover" src="${esc(large)}" alt="${esc(act.assets.large_text || act.name)}" />`
+              : `<span class="activity-cover-fallback">${isCode ? VSCODE_ICON : GAME_ICON}</span>`}
+            ${small ? `<img class="activity-cover-badge" src="${esc(small)}" alt="" />` : ""}
+          </div>
+          <div class="spotify-now-info">
+            <div class="spotify-now-title">${esc(title)}</div>
+            ${lines.map((l) => `<div class="spotify-now-artist">${esc(l)}</div>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function spotifyBlock(s) {
+    return `
+      <div class="activity-block">
+        <div class="spotify-now-label">Ouvindo Spotify</div>
+        <div class="spotify-now-row">
+          <img class="spotify-now-cover" src="${esc(s.album_art_url)}" alt="${esc(s.album || s.song)}" />
+          <div class="spotify-now-info">
+            <div class="spotify-now-title">${esc(s.song)}</div>
+            <div class="spotify-now-artist">${esc(s.artist)}</div>
+          </div>
+          <span class="spotify-now-icon">${SPOTIFY_ICON}</span>
+        </div>
+      </div>`;
+  }
+
+  // atualiza o "tempo decorrido" a cada segundo
+  setInterval(() => {
+    if (!activityEl) return;
+    activityEl.querySelectorAll("[data-elapsed-start]").forEach((el) => {
+      el.textContent = fmtElapsed(Date.now() - Number(el.getAttribute("data-elapsed-start")));
+    });
+  }, 1000);
+
   function applyActivity(data) {
     if (!activityEl || !CONFIG.showDiscordActivity) return;
 
-    if (data.listening_to_spotify && data.spotify) {
-      const s = data.spotify;
-      activityEl.innerHTML = `
-        <div class="spotify-now-label">Ouvindo Spotify</div>
-        <div class="spotify-now-row">
-          <img class="spotify-now-cover" src="${s.album_art_url}" alt="${s.album || s.song}" />
-          <div class="spotify-now-info">
-            <div class="spotify-now-title">${s.song}</div>
-            <div class="spotify-now-artist">${s.artist}</div>
-          </div>
-          <span class="spotify-now-icon">${SPOTIFY_ICON}</span>
-        </div>`;
-      activityEl.classList.add("visible");
-      return;
-    }
-
-    let text = "";
+    // atividade principal (editor/jogo) + Spotify, podendo aparecer as duas
+    const blocks = [];
     if (Array.isArray(data.activities)) {
       const act = data.activities.find((a) => a.type === 0 && a.name);
-      if (act) text = `🎮 Jogando ${act.name}`;
+      if (act) blocks.push(activityBlock(act));
     }
-    if (text) {
-      activityEl.textContent = text;
+    if (data.listening_to_spotify && data.spotify) blocks.push(spotifyBlock(data.spotify));
+
+    if (blocks.length) {
+      activityEl.innerHTML = blocks.join("");
       activityEl.classList.add("visible");
     } else {
       activityEl.innerHTML = "";
