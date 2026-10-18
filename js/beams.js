@@ -30,6 +30,8 @@
     out vec4 fragColor;
     uniform float uTime;
     uniform vec2 uResolution;
+    uniform vec3 uColor;
+    uniform float uAlpha;
 
     float beam(vec2 uv, vec2 origin, float angle, float width, float seed) {
       vec2 p = uv - origin;
@@ -60,7 +62,7 @@
       total += beam(uv, vec2(ar * 0.20, 0.95), radians(-38.0), 0.05, 8.3);
       total = clamp(total, 0.0, 1.0);
 
-      fragColor = vec4(vec3(1.0), total * 0.42);
+      fragColor = vec4(uColor, total * uAlpha);
     }
   `;
 
@@ -88,6 +90,23 @@
 
   const uTimeLoc = gl.getUniformLocation(program, "uTime");
   const uResolutionLoc = gl.getUniformLocation(program, "uResolution");
+  const uColorLoc = gl.getUniformLocation(program, "uColor");
+  const uAlphaLoc = gl.getUniformLocation(program, "uAlpha");
+
+  // cor dos feixes por tema: no escuro, branco levemente puxado pra cor
+  // de destaque; no claro, a própria cor de destaque (em vez de inverter
+  // o canvas, que deixava os feixes acinzentados)
+  function applyThemeColor() {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    if (isLight) {
+      gl.uniform3f(uColorLoc, 1.0, 1.0, 1.0);
+      gl.uniform1f(uAlphaLoc, 0.42);
+    } else {
+      gl.uniform3f(uColorLoc, 1.0, 1.0, 1.0);
+      gl.uniform1f(uAlphaLoc, 0.42);
+    }
+  }
+  applyThemeColor();
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -130,6 +149,8 @@
       rafId = requestAnimationFrame(frame);
     }
   });
+
+  new MutationObserver(applyThemeColor).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   rafId = requestAnimationFrame(frame);
 })();

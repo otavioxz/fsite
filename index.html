@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>faike - profile</title>
   <meta name="description" content="developer full stack" />
+  <meta name="theme-color" content="#000000" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="faike — dev back-end & QA" />
+  <meta property="og:description" content="Desenvolvedor Back-end e QA Tester. Bots, automações e APIs." />
+  <meta property="og:image" content="assets/image/ticketia.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="assets/icons/star.webp" type="image/webp" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=15" />
 </head>
 <body>
   <canvas class="beams-canvas" data-beams-canvas></canvas>
@@ -23,13 +29,19 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="status-pill" type="button">
-          <span class="status-dot-wrap">
-            <span class="status-dot-ping" data-status-ping></span>
-            <span class="status-dot" data-status-dot></span>
-          </span>
-          <span data-status-text>Offline</span>
-        </button>
+        <div class="status-wrap" data-status-wrap>
+          <button class="status-pill" type="button" aria-describedby="status-pop" data-status-pill>
+            <span class="status-dot-wrap">
+              <span class="status-dot-ping" data-status-ping></span>
+              <span class="status-dot" data-status-dot></span>
+            </span>
+            <span data-status-text>Offline</span>
+          </button>
+          <!-- preenchido pelo main.js com uma cópia do card de perfil -->
+          <div class="status-pop" id="status-pop" role="tooltip">
+            <div class="status-pop-card" data-status-pop></div>
+          </div>
+        </div>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema"></button>
       </div>
     </header>
@@ -108,12 +120,15 @@
     <!-- Sobre -->
     <section class="section" id="sobre">
       <div class="section-head reveal">
-        <div class="section-kicker">Sobre mim</div>
-        <h2 class="section-title">Quem eu sou</h2>
+        <div class="section-kicker">About me</div>
+        <h2 class="section-title">Who I am</h2>
       </div>
       <div class="about-content reveal">
-        <p class="about-text" data-about-text></p>
-        <div class="skills-wrap" data-skills></div>
+        <div class="about-main">
+          <p class="about-text" data-about-text></p>
+          <div class="skills-wrap" data-skills></div>
+        </div>
+        <ol class="timeline" data-timeline></ol>
       </div>
     </section>
 
@@ -187,7 +202,7 @@
           <div class="vol-popup">
             <div class="vol-slider-box">
               <div class="vol-slider-inner">
-                <input class="vol-input" type="range" min="0" max="1" step="0.01" value="0.35" data-player-volume aria-label="Volume" />
+                <input class="vol-input" type="range" min="0" max="1" step="0.01" value="0.15" data-player-volume aria-label="Volume" />
               </div>
             </div>
           </div>
@@ -210,11 +225,11 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=2"></script>
-  <script src="js/main.js?v=2"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/main.js?v=7"></script>
   <script src="js/lanyard.js?v=4"></script>
-  <script src="js/player.js?v=9"></script>
-  <script src="js/beams.js?v=2"></script>
+  <script src="js/player.js?v=10"></script>
+  <script src="js/beams.js?v=6"></script>
   <script src="js/visitor-log.js?v=1"></script>
 </body>
 </html>

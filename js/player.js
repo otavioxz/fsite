@@ -7,7 +7,8 @@
   if (songs.length === 0) return;
 
   const audio = new Audio();
-  audio.volume = 0.35; // um pouco abaixo da metade
+  const START_VOLUME = typeof CONFIG.playerVolume === "number" ? CONFIG.playerVolume : 0.15;
+  audio.volume = START_VOLUME;
 
   let index = 0;
   let liked = new Set(JSON.parse(localStorage.getItem("likedSongs") || "[]"));
@@ -136,8 +137,12 @@
     });
   }
 
+  let fadeId = null; // fade-in do primeiro play; cancelado se o usuário mexer no volume
   if (els.volInput) {
+    els.volInput.value = START_VOLUME;
     els.volInput.addEventListener("input", () => {
+      if (fadeId) cancelAnimationFrame(fadeId);
+      fadeId = null;
       audio.volume = Number(els.volInput.value);
       if (audio.muted) audio.muted = false; // mexer no slider já desmuta
     });
@@ -178,8 +183,22 @@
   // Assim que o usuário interagir com a página pela primeira vez (clique,
   // tecla ou toque), o som é ligado automaticamente — sem precisar que ele
   // ache o botão de mute do player.
+  // o som entra subindo aos poucos (0 -> volume inicial em ~1.5s), pra não
+  // assustar quem clicou na página sem esperar música
+  function fadeIn(target, duration) {
+    const start = performance.now();
+    audio.volume = 0;
+    function step(now) {
+      const t = Math.min((now - start) / duration, 1);
+      audio.volume = target * t;
+      fadeId = t < 1 ? requestAnimationFrame(step) : null;
+    }
+    fadeId = requestAnimationFrame(step);
+  }
+
   function unmuteOnFirstInteraction() {
     audio.muted = false;
+    fadeIn(START_VOLUME, 1500);
     if (audio.paused) audio.play().catch(() => {});
     window.removeEventListener("click", unmuteOnFirstInteraction);
     window.removeEventListener("keydown", unmuteOnFirstInteraction);

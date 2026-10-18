@@ -97,11 +97,17 @@
     let globalIndex = 0;
     CONFIG.headline.forEach((line) => {
       const lineEl = document.createElement("span");
-      lineEl.className = "headline-line" + (line.muted ? " muted" : "");
-      [...line.text].forEach((ch) => {
+      lineEl.className = "headline-line" + (line.muted ? " muted" : "") + (line.accent ? " accent" : "");
+      const chars = [...line.text];
+      // --j/--n: posição da letra dentro da linha, usada pra "fatiar" o
+      // gradiente das linhas accent (cada letra é um inline-block animado,
+      // então o background-clip:text precisa ser aplicado letra a letra)
+      lineEl.style.setProperty("--n", Math.max(chars.length - 1, 1));
+      chars.forEach((ch, j) => {
         const span = document.createElement("span");
         span.className = "letter";
         span.style.setProperty("--i", globalIndex++);
+        span.style.setProperty("--j", j);
         span.textContent = ch === " " ? " " : ch;
         lineEl.appendChild(span);
       });
@@ -223,7 +229,7 @@
       card.target = "_blank";
       card.rel = "noopener noreferrer";
       const thumb = p.image
-        ? `<div class="project-thumb project-thumb-img"><img src="${p.image}" alt="${p.title}" /></div>`
+        ? `<div class="project-thumb project-thumb-img"><img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" /></div>`
         : `<div class="project-thumb" style="background:${p.color || "#3b82f6"}">${p.initial || p.title.charAt(0)}</div>`;
       card.innerHTML = `
         ${thumb}
@@ -232,6 +238,12 @@
         <div class="project-tags">${(p.tags || []).map((t) => `<span class="tag">${t}</span>`).join("")}</div>
         <div class="project-link-arrow"><span>Ver projeto</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></div>
       `;
+      // spotlight: gradiente radial que segue o cursor dentro do card
+      card.addEventListener("pointermove", (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+        card.style.setProperty("--my", `${e.clientY - rect.top}px`);
+      });
       projectsGrid.appendChild(card);
     });
   }
@@ -240,12 +252,106 @@
   const aboutText = document.querySelector("[data-about-text]");
   if (aboutText) aboutText.textContent = CONFIG.about;
   const skillsWrap = document.querySelector("[data-skills]");
+  // ícones monocromáticos do Simple Icons (aplicados via mask, então
+  // herdam a cor do texto e funcionam nos dois temas)
+  const SKILL_ICONS = {
+    python: "python",
+    javascript: "javascript",
+    typescript: "typescript",
+    "node.js": "nodedotjs",
+    cypress: "cypress",
+    mongodb: "mongodb",
+    mysql: "mysql",
+    postman: "postman",
+    "discord.js": "discord",
+    docker: "docker",
+    flask: "flask",
+    express: "express",
+  };
   if (skillsWrap) {
     CONFIG.skills.forEach((s) => {
       const chip = document.createElement("span");
       chip.className = "skill-chip";
-      chip.textContent = s;
+      const slug = SKILL_ICONS[s.toLowerCase()];
+      if (slug) {
+        const icon = document.createElement("span");
+        icon.className = "skill-icon";
+        icon.style.setProperty("--icon", `url("https://cdn.jsdelivr.net/npm/simple-icons@11.0.0/icons/${slug}.svg")`);
+        chip.appendChild(icon);
+      }
+      chip.appendChild(document.createTextNode(s));
       skillsWrap.appendChild(chip);
+    });
+  }
+  const timelineEl = document.querySelector("[data-timeline]");
+  if (timelineEl) {
+    (CONFIG.timeline || []).forEach((t) => {
+      const li = document.createElement("li");
+      li.className = "timeline-item";
+      li.innerHTML = `
+        <span class="timeline-period">${t.period}</span>
+        <span class="timeline-title">${t.title}</span>
+        <span class="timeline-place">${t.place || ""}</span>`;
+      timelineEl.appendChild(li);
+    });
+    if (!timelineEl.children.length) timelineEl.style.display = "none";
+  }
+
+  // ---------- Botões "magnéticos" (seguem levemente o cursor) ----------
+  document.querySelectorAll(".btn-primary, .btn-secondary").forEach((btn) => {
+    btn.addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") return;
+      const rect = btn.getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2);
+      const dy = e.clientY - (rect.top + rect.height / 2);
+      btn.style.transform = `translate(${dx * 0.18}px, ${dy * 0.25}px)`;
+    });
+    btn.addEventListener("pointerleave", () => {
+      btn.style.transform = "";
+    });
+  });
+
+  // ---------- Popover do status (cópia do card de perfil) ----------
+  // Copia o conteúdo do card principal em vez de montar outro: assim tudo
+  // que o lanyard.js atualiza lá (status, avatar, Spotify, insígnias)
+  // aparece aqui também, sem duplicar a lógica.
+  const statusWrap = document.querySelector("[data-status-wrap]");
+  const statusPop = document.querySelector("[data-status-pop]");
+  const profileSource = document.querySelector(".glow-inner");
+  if (statusWrap && statusPop && profileSource) {
+    let pending = false;
+    function syncStatusPop() {
+      pending = false;
+      const clone = profileSource.cloneNode(true);
+      // tira data-* e ids pra cópia não ser confundida com o original
+      [clone, ...clone.querySelectorAll("*")].forEach((el) => {
+        [...el.attributes].forEach((a) => {
+          if (a.name.startsWith("data-") || a.name === "id") el.removeAttribute(a.name);
+        });
+      });
+      statusPop.replaceChildren(...clone.childNodes);
+    }
+    new MutationObserver(() => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(syncStatusPop);
+    }).observe(profileSource, { subtree: true, childList: true, attributes: true, characterData: true });
+    syncStatusPop();
+
+    // toque/clique abre e fecha (no celular não existe hover)
+    const pill = statusWrap.querySelector("[data-status-pill]");
+    pill.addEventListener("click", (e) => {
+      e.stopPropagation();
+      statusWrap.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!statusWrap.contains(e.target)) statusWrap.classList.remove("open");
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        statusWrap.classList.remove("open");
+        pill.blur();
+      }
     });
   }
 

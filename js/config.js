@@ -50,15 +50,20 @@ const CONFIG = {
 
   // ---- Estatísticas ----
   stats: [
-    { icon: "terminal", value: 3, suffix: "+", label: "de Experiência" },
+    { icon: "terminal", value: 3, suffix: "+", label: "Anos de Experiência" },
     { icon: "git-branch", value: 42, suffix: "+", label: "Projetos & Repos" },
     { icon: "cpu", value: 1200, suffix: "+", label: "Commits no Ano" },
     { icon: "activity", value: 99.9, suffix: "%", label: "Uptime de APIs" },
   ],
 
   // ---- Seção "Sobre" ----
-  about: "Olá! Sou desenvolvedor Back-end e QA Tester de Santa Catarina, atualmente na Magazord Digital Commerce. Trabalho com Python, JavaScript e automação de testes, e minha especialidade é o desenvolvimento de bots e automações para Discord. Gosto de aprender coisas novas e construir projetos que unam inovação e funcionalidade.",
+  about: "Hi! I'm a Back-end Developer and QA Tester from Santa Catarina, Brazil, currently working at Magazord Digital Commerce. I work with Python, JavaScript and test automation, and I specialize in building bots and automations for Discord. I love learning new things and building projects that combine innovation and functionality.",
   skills: ["Python", "JavaScript", "Node.js", "Cypress", "MongoDB", "MySQL", "Postman", "Discord.js"],
+  // Linha do tempo exibida ao lado do texto "Sobre". Adicione/edite à vontade.
+  timeline: [
+    { period: "Current", title: "Back-end & QA Tester", place: "Magazord Digital Commerce" },
+    { period: "Personal projects", title: "Discord bots & automations", place: "Python · JavaScript" },
+  ],
 
   // ---- Projetos (seção "Portfólio") ----
   // "image": opcional. Se preencher com uma URL/caminho de imagem, ela substitui
@@ -69,27 +74,27 @@ const CONFIG = {
       description: "Realizei o desenvolvimento em JavaScript e utilizando a API do Grok, um bot de atendimento para servidores do Discord com IA respondendo o usuário até que algum responsável assuma o ticket.",
       tags: ["Discord.js", "Node.js", "Groq"],
       link: "https://github.com/otavioxz/sentinel-IA",
-      color: "#5865f2",
+      color: "#6366f1",
       initial: "SI",
-      image: "assets/image/ticketia.png",
+      image: "assets/image/ticketia.webp",
     },
     {
       title: "News API",
       description: "API REST para um app de notícias e blogs, com testes automatizados (Jest + Supertest), CI/CD via GitHub Actions e containerização com Docker.",
       tags: ["Express", "Docker", "CI/CD"],
       link: "https://github.com/otavioxz/news-api",
-      color: "#f97316",
+      color: "#3b82f6",
       initial: "NA",
-      image: "assets/image/newsai.png",
+      image: "assets/image/newsai.webp",
     },
     {
       title: "Bot Discord (Python)",
       description: "Bot multifuncional em Python com sistema de tickets, moderação (ban/mute/bloqueio de canal), XP e níveis, notificações de live e integração com Instagram, além de uma API própria em Flask para download de vídeos.",
       tags: ["Python", "Discord", "Flask"],
       link: "https://github.com/otavioxz/bot_discord.prototype",
-      color: "#22c55e",
+      color: "#22b8f0",
       initial: "BD",
-      image: "assets/image/botpy.png",
+      image: "assets/image/botpy.webp",
     },
   ],
 
@@ -102,6 +107,7 @@ const CONFIG = {
   // Deixe "cover" e "title" em branco pra usar o que vier do Spotify, ou
   // preencha na mão pra sobrescrever. O ARTISTA não vem da API, sempre
   // precisa ser digitado manualmente em "artist".
+  playerVolume: 0.15, // volume inicial do player, de 0 a 1 (0.15 = 15%)
   songs: [
     {
       title: "",
@@ -111,13 +117,8 @@ const CONFIG = {
       spotifyUrl: "https://open.spotify.com/intl-pt/track/4eGHEHqoDMMejzPhRFTc7p?si=036f41c74b64413d",
       src: "assets/audio/track1.mp3",
     },
-    {
-      title: "Outra Faixa",
-      artist: "Outro Artista",
-      cover: "",
-      spotifyUrl: "",
-      src: "assets/audio/track2.mp3",
-    },
+    // para adicionar mais faixas, copie o bloco acima e aponte "src"
+    // para um arquivo que exista em assets/audio/
   ],
 
   // ---- Rodapé ----
